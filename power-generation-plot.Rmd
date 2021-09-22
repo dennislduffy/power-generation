@@ -1,0 +1,62 @@
+---
+title: "<br>"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=F}
+library(tidyverse)
+library(ggbump)
+library(readxl)
+library(janitor)
+library(ggsci)
+library(plotly)
+```
+
+```{r, include = F}
+raw_power <- read_xls(paste0(getwd(), "/annual_generation_state.xls"), skip = 1)
+
+power_data <- raw_power %>%
+  clean_names() %>%
+  filter(state == "MN", 
+         type_of_producer == "Total Electric Power Industry", 
+         energy_source != "Total" & energy_source != "Other Gases", 
+         year>= 2012) %>% #include balanced set of power sources
+  group_by(year) %>% 
+  mutate(rank = rank(generation_megawatthours, ties.method = "random"), 
+         left_label = paste0(energy_source, "     "), 
+         right_label = paste0("     ", energy_source)) %>%
+  ungroup()
+```
+
+```{r, echo = F, fig.width=10, fig.height=7}
+ggplot(power_data, aes(year, rank, color = energy_source)) +
+  geom_bump() + 
+  geom_point(size = 1) +
+  scale_color_jco() + 
+  geom_text(data = power_data %>% filter(year == min(year)),
+            aes(label = left_label),
+            size = 4, hjust = 1) +
+   geom_text(data = power_data %>% filter(year == max(year)),
+             aes(label = right_label),
+             size = 4, hjust = 0) +
+  ggtitle("Minnesota Energy Sources Ranked in Terms of Megawatt Hours Produced: 2012-2020\n") + 
+  scale_x_continuous(limits = c(2007, 2025), breaks = c(2012, 2020)) +
+  ylab("Rank") + 
+  xlab("Year") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "white"), 
+        legend.position = "none", 
+        axis.text.y=element_blank(), 
+        axis.ticks.y=element_blank(), 
+        axis.ticks.x=element_blank(), 
+        plot.title = element_text(hjust = 0.5))
+
+```
+<br>
+<br>
+<br>
+Data Source: Net Generation by State by Type of Producer by Energy Source (EIA-906, EIA-920, and EIA-923) Final 2020 data released on September 15, 2021. Data available at https://www.eia.gov/electricity/data/state/
