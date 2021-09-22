@@ -44,7 +44,7 @@ ggplot(power_data, aes(year, rank, color = energy_source)) +
              aes(label = right_label),
              size = 4, hjust = 0) +
   ggtitle("Minnesota Energy Sources Ranked in Terms of Megawatt Hours Produced: 2012-2020\n") + 
-  scale_x_continuous(limits = c(2007, 2025), breaks = c(2012, 2020)) +
+  scale_x_continuous(limits = c(2007, 2025), breaks = c(2012:2020)) +
   ylab("Rank") + 
   xlab("Year") +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
